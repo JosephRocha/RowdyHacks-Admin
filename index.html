@@ -1,0 +1,106 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/docs/4.0/assets/img/favicons/favicon.ico">
+
+    <title>RowdyHacks Event Management</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/starter-template/">
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+      <a class="navbar-brand" href="#">RowdyHacks Event Management</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </nav>
+      <div class="conatiner">
+        <div id="output" hidden>
+            <div id="root" class="container" style="width: 100%; max-width: 75%; padding: 15px; margin: auto; display: block">
+              <div class="card shadow bg-white rounded">
+                <div class="card-body">
+                  <div>
+                      <canvas id="canvas" style="width: 100%; height: auto" hidden></canvas>
+                      <h2 class="text-center"> Place QR code in front of camera</h2>
+                      <input id="outputData" class="form-control" type="text" placeholder="" readonly>
+                      <br>
+                      <button id="checkinbutton" type="submit" class="btn btn-success btn-lg btn-block" disabled>Check In</button>
+                      
+                  </div>
+                </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <script>
+        var video = document.createElement("video");
+        var canvasElement = document.getElementById("canvas");
+        var canvas = canvasElement.getContext("2d");
+        var loadingMessage = document.getElementById("loadingMessage");
+        var outputContainer = document.getElementById("output");
+        var outputMessage = document.getElementById("outputMessage");
+        var outputData = document.getElementById("outputData");
+
+        function drawLine(begin, end, color) {
+          canvas.beginPath();
+          canvas.moveTo(begin.x, begin.y);
+          canvas.lineTo(end.x, end.y);
+          canvas.lineWidth = 4;
+          canvas.strokeStyle = color;
+          canvas.stroke();
+        }
+
+        // Use facingMode: environment to attemt to get the front camera on phones
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+          video.play();
+          requestAnimationFrame(tick);
+        });
+
+        function tick() {
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.hidden = false;
+            outputContainer.hidden = false;
+
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (code) {
+              drawLine(code.location.topLeftCorner, code.location.topRightCorner, "#FF3B58");
+              drawLine(code.location.topRightCorner, code.location.bottomRightCorner, "#FF3B58");
+              drawLine(code.location.bottomRightCorner, code.location.bottomLeftCorner, "#FF3B58");
+              drawLine(code.location.bottomLeftCorner, code.location.topLeftCorner, "#FF3B58");
+              outputData.parentElement.hidden = false;
+              outputData.innerText = code.data;
+              outputData.value = code.data;
+              $("#checkinbutton").removeAttr("disabled");
+            }
+          }
+          requestAnimationFrame(tick);
+        }
+    </script>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script src="jsQR.js"></script>
+  </body>
+</html>
+
