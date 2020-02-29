@@ -10,32 +10,42 @@
 
     <title>RowdyHacks Event Management</title>
 
-    <link rel="canonical" href="https://getbootstrap.com/docs/4.0/examples/starter-template/">
-
     <!-- Bootstrap core CSS -->
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.10.0/css/mdb.min.css" rel="stylesheet">
   </head>
 
   <body>
 
-    <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-      <a class="navbar-brand" href="#">RowdyHacks Event Management</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    </nav>
+    <!--Navbar-->
+    <nav class="navbar navbar-expand-lg navbar-dark elegant-color-dark" style="background-color: #00c89b">
+  <a class="navbar-brand" href="https://rowdyhacks.io/"><img src="AbstractRowdy.png" width="45" height="45" alt=""> RowdyHacks Event Management</a>
+</nav>
+<!--/.Navbar-->
       <div class="conatiner">
         <div id="output" hidden>
-            <div id="root" class="container" style="width: 100%; max-width: 75%; padding: 15px; margin: auto; display: block">
+            <div style="min-height: 100%; min-height: 50vh; display: flex; align-items: center;">
+                <div id="root" class="container" style="width: 100%; max-width: 650px; padding: 15px;">
               <div class="card shadow bg-white rounded">
                 <div class="card-body">
                   <div>
                       <canvas id="canvas" style="width: 100%; height: auto" hidden></canvas>
                       <h2 class="text-center"> Place QR code in front of camera</h2>
-                      <input id="outputData" class="form-control" type="text" placeholder="" readonly>
+                      <input id="outputData" class="form-control" type="text" placeholder="Participant ID" readonly>
+                      <br/>
+                      <input id="firstname" class="form-control" type="text" placeholder="Participant First Name" readonly>
+                      <br>
+                      <input id="lastname" class="form-control" type="text" placeholder="Participant Last Name" readonly>
+                      <br>
+                      <input id="email" class="form-control" type="text" placeholder="Participant Email Name" readonly>
                       <br>
                       <button id="checkinbutton" type="submit" class="btn btn-success btn-lg btn-block" disabled>Check In</button>
-                      
+                    </div>
                   </div>
                 </div>
                 </div>
@@ -50,7 +60,7 @@
         var outputContainer = document.getElementById("output");
         var outputMessage = document.getElementById("outputMessage");
         var outputData = document.getElementById("outputData");
-
+        var calledAPI = false;
         function drawLine(begin, end, color) {
           canvas.beginPath();
           canvas.moveTo(begin.x, begin.y);
@@ -88,7 +98,28 @@
               outputData.parentElement.hidden = false;
               outputData.innerText = code.data;
               outputData.value = code.data;
+                
+              if($("#outputData").attr('placeholder') == "Participant ID"){
+                   $.ajax({
+                    url: "https://6s9z45ev62.execute-api.us-east-1.amazonaws.com/prod/user/",
+                    type: "POST",
+                    data: JSON.stringify({"body": {"Id": code.data}}),
+                    datatype: "json",
+                    crossDomain: true,
+                    contentType: 'application/json',
+                    success: function (data) {
+                          document.getElementById("firstname").innerHTML = data.body.Item.firstname.S ;
+                          document.getElementById("lastname").innerHTML = data.body.Item.lastname.S ;
+                          document.getElementById("email").innerHTML = data.body.Item.email.S ;
+                          document.getElementById("firstname").value = data.body.Item.firstname.S ;
+                          document.getElementById("lastname").value = data.body.Item.lastname.S ;
+                          document.getElementById("email").value= data.body.Item.email.S ;
+                          console.log();
+                        }
+                    });
+              }
               $("#checkinbutton").removeAttr("disabled");
+              
             }
           }
           requestAnimationFrame(tick);
@@ -97,9 +128,14 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery-slim.min.js"><\/script>')</script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <!-- JQuery -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <!-- Bootstrap tooltips -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+        <!-- Bootstrap core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <!-- MDB core JavaScript -->
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.10.0/js/mdb.min.js"></script>
     <script src="jsQR.js"></script>
   </body>
 </html>
